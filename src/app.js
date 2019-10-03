@@ -136,6 +136,17 @@ module.exports = (db) => {
      *   get:
      *     summary: List all the rides
      *     description: Returns a list of all the rides booked
+     *     parameters:
+     *           - in: queryParam
+     *             name: page
+     *             type: number
+     *             default: 1
+     *             descrption: page number for you want to fetch data 
+     *           - in: queryParam
+     *             name: limit
+     *             type: number
+     *             default: 1
+     *             descrption: limit per page
      *     tags:
      *       - external
      *     responses:
@@ -179,12 +190,12 @@ module.exports = (db) => {
      */
     app.get('/rides', (req, res) => {
         (async () => {
-            const LIMIT = 10;
+            let limit = req.query.limit || 10;
             let page = req.query.page || 1;
-            let offset = (page * LIMIT) - LIMIT;
+            let offset = (page * limit) - limit;
 
             try {
-                let rows = await rideModels(db).getRides(offset, LIMIT);
+                let rows = await rideModels(db).getRides(offset, limit);
 
                 if (rows.length === 0) {
                     return res.send({
