@@ -7,8 +7,91 @@ const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
 module.exports = (db) => {
+    /**
+     * @swagger
+     * /health:
+     *   get:
+     *     summary: This API will be used to check the system healt
+     *     description: In Response return Healthy if successful
+     *     tags:
+     *       - internal
+     *     responses:
+     *       200:
+     *         description: Health Status
+     *         schema:
+     *           type: string
+     */
     app.get('/health', (req, res) => res.send('Healthy'));
 
+    /**
+     * @swagger
+     * /rides:
+     *   post:
+     *     summary: This API will be used to create a ride FE/external system will hit this API 
+     *     description: Add a ride in Database
+     *     tags:
+     *       - external
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               start_lat:
+     *                 type: number
+     *               start_long:
+     *                  type: number
+     *               end_lat:
+     *                  type: number
+     *               end_long:
+     *                  type: number
+     *               rider_name:
+     *                  type: number
+     *               driver_name:
+     *                  type: string
+     *               driver_vehicle:
+     *                  type: string
+     *
+     *     responses:
+     *       200:
+     *         description: Response in case ride successfully added
+     *         schema:
+     *           type: array
+     *           items:
+     *               type: object
+     *               properties:
+     *                  startLat:
+     *                      type: number
+     *                      description: Starting Lat Coordinate
+     *                  startLong:
+     *                      type: number
+     *                      description: Starting Lng Coordinate
+     *                  endLat:
+     *                      type: number
+     *                      description: End Lat Coordinate
+     *                  endLong:
+     *                      type: number
+     *                      description: End Lng Coordinate
+     *                  riderName:
+     *                      type: string
+     *                  driverName:
+     *                      type: string
+     *                  driverVehicle:
+     *                      type: string
+     *
+     *
+     *       404:
+     *          description: Error Response in case system not able to add ride
+     *          schema:
+     *              type: object
+     *              properties:
+     *                  error_code:
+     *                      type: string
+     *                      description : possible values (SERVER_ERROR, VALIDATION_ERROR)
+     *                  message:
+     *                      type: string
+     *                      description: error message from server
+     */
     app.post('/rides', jsonParser, (req, res) => {
         const startLatitude = Number(req.body.start_lat);
         const startLongitude = Number(req.body.start_long);
@@ -76,6 +159,53 @@ module.exports = (db) => {
         });
     });
 
+    /**
+     * @swagger
+     * /rides:
+     *   get:
+     *     summary: List all the rides
+     *     description: Returns a list of all the rides booked
+     *     tags:
+     *       - external
+     *     responses:
+     *       200:
+     *         description: List of rides
+     *         schema:
+     *           type: array
+     *           items:
+     *               type: object
+     *               properties:
+     *                  startLat:
+     *                      type: number
+     *                      description: Starting Lat Coordinate
+     *                  startLong:
+     *                      type: number
+     *                      description: Starting Lng Coordinate
+     *                  endLat:
+     *                      type: number
+     *                      description: End Lat Coordinate
+     *                  endLong:
+     *                      type: number
+     *                      description: End Lng Coordinate
+     *                  riderName:
+     *                      type: string
+     *                  driverName:
+     *                      type: string
+     *                  driverVehicle:
+     *                      type: string
+     *       404:
+     *          description: Rides not found
+     *          schema:
+     *              type: object
+     *              properties:
+     *                  error_code:
+     *                      type: string
+     *                      description : possible values (SERVER_ERROR)
+     *                  message:
+     *                      type: string
+     *                      description: error message from server
+     *
+     */
     app.get('/rides', (req, res) => {
         db.all('SELECT * FROM Rides', function (err, rows) {
             if (err) {
@@ -96,6 +226,57 @@ module.exports = (db) => {
         });
     });
 
+    /**
+     * @swagger
+     * /rides/:id:
+     *   get:
+     *     summary: Get Ride by id
+     *     description: Returns ride by id
+     *     tags:
+     *       - external
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         type: integer
+     *         required: true
+     *
+     *     responses:
+     *       200:
+     *         description: Ride Object
+     *         schema:
+     *          type: object
+     *          properties:
+     *                  startLat:
+     *                      type: number
+     *                      description: Starting Lat Coordinate
+     *                  startLong:
+     *                      type: number
+     *                      description: Starting Lng Coordinate
+     *                  endLat:
+     *                      type: number
+     *                      description: End Lat Coordinate
+     *                  endLong:
+     *                      type: number
+     *                      description: End Lng Coordinate
+     *                  riderName:
+     *                      type: string
+     *                  driverName:
+     *                      type: string
+     *                  driverVehicle:
+     *                      type: string
+     *       404:
+     *          description: Rides not found
+     *          schema:
+     *              type: object
+     *              properties:
+     *                  error_code:
+     *                      type: string
+     *                      description : possible values (SERVER_ERROR, RIDES_NOT_FOUND_ERROR)
+     *                  message:
+     *                      type: string
+     *                      description: error message from server
+     *
+     */
     app.get('/rides/:id', (req, res) => {
         db.all(`SELECT * FROM Rides WHERE rideID='${req.params.id}'`, function (err, rows) {
             if (err) {
